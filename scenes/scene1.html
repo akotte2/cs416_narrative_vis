@@ -6,19 +6,19 @@
 <script src="https://d3js.org/d3.v4.js"></script>
 
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div id="scene1"></div>
 
 
 <script>
 
 
   // set the dimensions and margins of the graph
-  var margin = {top: 10, right: 30, bottom: 90, left: 40},
-      width = 460 - margin.left - margin.right,
-      height = 450 - margin.top - margin.bottom;
+  var margin = {top: 70, right: 70, bottom: 70, left: 70},
+      width = 800 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
-  var svg = d3.select("#my_dataviz")
+  var svg = d3.select("#scene1")
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -26,6 +26,10 @@
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
   
+  // Create Color Scale
+  var colorScale = d3.scaleLinear().domain([660,12394]) // change with min and max of my data
+    .range(["gold", "firebrick"])
+
   // Parse the Data
   d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv", function(data) {
   
@@ -43,7 +47,7 @@
   
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([0, 13000])
+    .domain([0, 20000]) //1900000
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
@@ -55,11 +59,35 @@
     .append("rect")
       .attr("x", function(d) { return x(d.Country); })
       .attr("width", x.bandwidth())
-      .attr("fill", "#69b3a2")
+      .attr("fill", function(d){return colorScale(d.Value) })
       // no bar at the beginning thus:
       .attr("height", function(d) { return height - y(0); }) // always equal to 0
       .attr("y", function(d) { return y(0); })
   
+  // Add X axis label:
+  svg.append("text")
+    .attr("text-anchor", "middle")
+    .attr("x", width - 350)
+    .attr("y", height + 70)
+    .text("Year");
+
+  // Y axis label:
+  svg.append("text")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("y", -margin.left+20)
+    .attr("x", -margin.top-100)
+    .text("Total Dengue Cases");
+
+  // Title;
+  svg.append("text")
+      .attr("x", (width / 2))             
+      .attr("y", 0 - (margin.top / 3))
+      .attr("text-anchor", "middle")  
+      .style("font-size", "20px") 
+      .style("text-decoration", "underline")  
+      .text("Total Dengue Fever Cases in South America by Year");
+
   // Animation
   svg.selectAll("rect")
     .transition()
