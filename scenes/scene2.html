@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.js"></script>
 
 <!-- Create a div where the graph will take place -->
-<div id="scene1"></div>
+<div id="scene2"></div>
 
 
 <script>
@@ -18,7 +18,7 @@
       height = 500 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
-  var svg = d3.select("#scene1")
+  var svg = d3.select("#scene2")
     .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -27,7 +27,7 @@
             "translate(" + margin.left + "," + margin.top + ")");
   
   // Create Color Scale
-  var colorScale = d3.scaleLinear().domain([578750,8810711]) 
+  var colorScale = d3.scaleLinear().domain([0.087,0.47]) 
     .range(["gold", "firebrick"]);
 
   // Parse the Data
@@ -47,7 +47,7 @@
   
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([0, 9000000]) 
+    .domain([0, 0.5]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
@@ -59,7 +59,7 @@
     .append("rect")
       .attr("x", function(d) { return x(d.Year); })
       .attr("width", x.bandwidth())
-      .attr("fill", function(d){return colorScale(d.Dengue_Cases) })
+      .attr("fill", function(d){return colorScale(d.Severe_Dengue_Rate) })
       // no bar at the beginning thus:
       .attr("height", function(d) { return height - y(0); }) // always equal to 0
       .attr("y", function(d) { return y(0); });
@@ -77,7 +77,7 @@
     .attr("transform", "rotate(-90)")
     .attr("y", -margin.left+20)
     .attr("x", -margin.top-100)
-    .text("Total Dengue Cases");
+    .text("Severe Dengue Case Rate (%)");
 
   // Title;
   svg.append("text")
@@ -86,21 +86,23 @@
       .attr("text-anchor", "middle")  
       .style("font-size", "20px") 
       .style("text-decoration", "underline")  
-      .text("Total Dengue Fever Cases in South America by Year");
+      .text("Severe Dengue Fever Case Rate in South America by Year");
 
   // Animation
   svg.selectAll("rect")
     .transition()
     .duration(800)
-    .attr("y", function(d) { return y(d.Dengue_Cases); })
-    .attr("height", function(d) { return height - y(d.Dengue_Cases); })
+    .attr("y", function(d) { return y(d.Severe_Dengue_Rate); })
+    .attr("height", function(d) { return height - y(d.Severe_Dengue_Rate); })
     .delay(function(d,i){console.log(i) ; return(i*100)});
   
   // Annotation
-  var annotationsScene1 = [
+  var annotationsScene2 = [
     {
       note: {
-        label: "While 2024 isn't over, South America has experienced record Dengue Fever case levels.",
+        label: "While only 0.087% of cases were severe this year.",
+        wrap: 130,
+        align: "middle"
       },
       connector: {
         end: "arrow",        // none, or arrow or dot
@@ -110,17 +112,45 @@
       },
       color: ["grey"],
       x: 600,
-      y: 8,
+      y: 295,
       dx: 70,
       dy: 70,
     }
   ];
 
-  var makeAnnotationsScene1 = d3.annotation()
-    .annotations(annotationsScene1);
+  var makeAnnotationsScene2 = d3.annotation()
+    .annotations(annotationsScene2);
 
   svg.append("g")
-    .call(makeAnnotationsScene1);
+    .call(makeAnnotationsScene2);
+
+  // Annotation
+  var annotationsScene2_p2 = [
+    {
+      note: {
+        label: "However, the disease's severity is decreasing: 0.47% of cases were severe in 2014.",
+        wrap: 135,
+        align: "middle"
+      },
+      connector: {
+        end: "arrow",        
+        type: "curve",      
+        points: 3,           
+        lineType: "horizontal",
+      },
+      color: ["grey"],
+      x: 55,
+      y: 20,
+      dx: 70,
+      dy: 70,
+    }
+  ];
+
+  var makeAnnotationsScene2_p2 = d3.annotation()
+    .annotations(annotationsScene2_p2);
+
+  svg.append("g")
+    .call(makeAnnotationsScene2_p2);
   
   });
 
