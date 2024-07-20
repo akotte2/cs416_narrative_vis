@@ -4,6 +4,7 @@
 
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.js"></script>
 
 <!-- Create a div where the graph will take place -->
 <div id="scene1"></div>
@@ -13,8 +14,8 @@
 
 
   // set the dimensions and margins of the graph
-  var margin = {top: 70, right: 70, bottom: 70, left: 70},
-      width = 800 - margin.left - margin.right,
+  var margin = {top: 70, right: 200, bottom: 70, left: 90},
+      width = 900 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
@@ -27,16 +28,16 @@
             "translate(" + margin.left + "," + margin.top + ")");
   
   // Create Color Scale
-  var colorScale = d3.scaleLinear().domain([660,12394]) // change with min and max of my data
-    .range(["gold", "firebrick"])
+  var colorScale = d3.scaleLinear().domain([578750,8810711]) 
+    .range(["gold", "firebrick"]);
 
   // Parse the Data
-  d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv", function(data) {
+  d3.csv("/cs416_narrative_vis/data/south_america_summary_dengue_rates.csv", function(data) {
   
   // X axis
   var x = d3.scaleBand()
     .range([ 0, width ])
-    .domain(data.map(function(d) { return d.Country; }))
+    .domain(data.map(function(d) { return d.Year; }))
     .padding(0.2);
   svg.append("g")
     .attr("transform", "translate(0," + height + ")")
@@ -47,7 +48,7 @@
   
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([0, 20000]) //1900000
+    .domain([0, 9000000]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
@@ -57,18 +58,18 @@
     .data(data)
     .enter()
     .append("rect")
-      .attr("x", function(d) { return x(d.Country); })
+      .attr("x", function(d) { return x(d.Year); })
       .attr("width", x.bandwidth())
-      .attr("fill", function(d){return colorScale(d.Value) })
+      .attr("fill", function(d){return colorScale(d.Dengue_Cases) })
       // no bar at the beginning thus:
       .attr("height", function(d) { return height - y(0); }) // always equal to 0
-      .attr("y", function(d) { return y(0); })
+      .attr("y", function(d) { return y(0); });
   
   // Add X axis label:
   svg.append("text")
     .attr("text-anchor", "middle")
     .attr("x", width - 350)
-    .attr("y", height + 70)
+    .attr("y", height + 50)
     .text("Year");
 
   // Y axis label:
@@ -92,10 +93,41 @@
   svg.selectAll("rect")
     .transition()
     .duration(800)
-    .attr("y", function(d) { return y(d.Value); })
-    .attr("height", function(d) { return height - y(d.Value); })
-    .delay(function(d,i){console.log(i) ; return(i*100)})
+    .attr("y", function(d) { return y(d.Dengue_Cases); })
+    .attr("height", function(d) { return height - y(d.Dengue_Cases); })
+    .delay(function(d,i){console.log(i) ; return(i*100)});
   
-  })
-  
+
+  // ANNOTATIONS
+  var annotationsScene1 = [
+    {
+      note: {
+        label: "While 2024 isn't over, South America has experienced record Dengue Fever case levels.",
+      },
+      connector: {
+        end: "arrow",        // none, or arrow or dot
+        type: "curve",       // Line or curve
+        points: 3,           // Number of break in the curve
+        lineType : "horizontal"
+      },
+      color: ["grey"],
+      x: 600,
+      y: 100,
+      dx: 70,
+      dy: 70,
+    }
+  ];
+
+  // Add annotation to the chart
+  var makeAnnotationsScene1 = d3.annotation()
+    .annotations(annotationsScene1);
+
+
+  svg.append("g")
+    .call(makeAnnotationsScene1);
+
+
+  });
+
+    
   </script>
