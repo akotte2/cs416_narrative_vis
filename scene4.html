@@ -78,7 +78,7 @@
         "translate(" + margin.left + "," + margin.top + ")");
 
     // Parse the Data
-    d3.csv("/data/south_america_by_country_dengue_rates.csv", function (data) {
+    d3.csv("https://akotte2.github.io/cs416_narrative_vis/data/south_america_by_country_dengue_rates.csv", function (data) {
 
       var data = data.filter(function (d) { return d.Country_Subregion == country });
 
