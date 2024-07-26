@@ -1,0 +1,19 @@
+// Create Color Scale based on selected metric
+      if (metric === "Dengue_Cases") {
+        var max = d3.max(data, function (d) { return d.Dengue_Cases; });
+        var min = d3.min(data, function (d) { return d.Dengue_Cases; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
+      else if (metric === "Severe_Dengue_Rate") {
+        var max = d3.max(data, function (d) { return d.Severe_Dengue_Rate; });
+        var min = d3.min(data, function (d) { return d.Severe_Dengue_Rate; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
+      else {
+        var max = d3.max(data, function (d) { return d.Dengue_Death_Rate; });
+        var min = d3.min(data, function (d) { return d.Dengue_Death_Rate; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
