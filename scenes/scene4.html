@@ -57,24 +57,33 @@
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
-  
-  // Create Color Scale based on selected metric
-  if (metric === "Dengue_Cases") {
-  var colorScale = d3.scaleLinear().domain([578750,8810711]) 
-  .range(["gold", "firebrick"]);
-  }
-  else if (metric === "Severe_Dengue_Rate") {
-    var colorScale = d3.scaleLinear().domain([0.087,0.47]) 
-    .range(["gold", "firebrick"]);
-  }
-  else {
-  var colorScale = d3.scaleLinear().domain([0.031,0.063]) 
-    .range(["gold", "firebrick"]);
-  }
 
   // Parse the Data
   d3.csv("/data/south_america_summary_dengue_rates.csv", function(data) {
   
+  var max = d3.max(data, function(d) { return d.Dengue_Cases; });
+  var min = d3.min(data, function(d) { return d.Dengue_Cases; });
+
+  // Create Color Scale based on selected metric
+  if (metric === "Dengue_Cases") {
+    var max = d3.max(data, function(d) { return d.Dengue_Cases; });
+    var min = d3.min(data, function(d) { return d.Dengue_Cases; });
+    var colorScale = d3.scaleLinear().domain([0,max]) 
+    .range(["gold", "firebrick"]);
+  }
+  else if (metric === "Severe_Dengue_Rate") {
+    var max = d3.max(data, function(d) { return d.Severe_Dengue_Rate; });
+    var min = d3.min(data, function(d) { return d.Severe_Dengue_Rate; });
+    var colorScale = d3.scaleLinear().domain([0,max]) 
+    .range(["gold", "firebrick"]);
+  }
+  else {
+    var max = d3.max(data, function(d) { return d.Dengue_Death_Rate; });
+    var min = d3.min(data, function(d) { return d.Dengue_Death_Rate; });
+    var colorScale = d3.scaleLinear().domain([0,max]) 
+      .range(["gold", "firebrick"]);
+  }
+
   // X axis
   var x = d3.scaleBand()
     .range([ 0, width ])
@@ -90,21 +99,21 @@
   // Add Y axis based on selected metric
   if (metric === "Dengue_Cases") {
   var y = d3.scaleLinear()
-    .domain([0, 9000000]) 
+    .domain([0, max]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
   }
   else if (metric === "Severe_Dengue_Rate"){
     var y = d3.scaleLinear()
-    .domain([0, 0.5]) 
+    .domain([0, max]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
   }
   else {
     var y = d3.scaleLinear()
-    .domain([0, 0.065]) 
+    .domain([0, max]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
