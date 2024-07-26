@@ -39,6 +39,10 @@
 </select>
 
 <script>
+  // for testing only
+  var country = "Argentina";
+  var metric = "Severe_Dengue_Rate";
+
 
   // set the dimensions and margins of the graph
   var margin = {top: 70, right: 200, bottom: 70, left: 90},
@@ -54,12 +58,22 @@
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
   
-  // Create Color Scale
+  // Create Color Scale based on selected metric
+  if (metric === "Dengue_Cases") {
+  var colorScale = d3.scaleLinear().domain([578750,8810711]) 
+  .range(["gold", "firebrick"]);
+  }
+  else if (metric === "Severe_Dengue_Rate") {
+    var colorScale = d3.scaleLinear().domain([0.087,0.47]) 
+    .range(["gold", "firebrick"]);
+  }
+  else {
   var colorScale = d3.scaleLinear().domain([0.031,0.063]) 
     .range(["gold", "firebrick"]);
+  }
 
   // Parse the Data
-  d3.csv("/cs416_narrative_vis/data/south_america_by_country_dengue_rates.csv", function(data) {
+  d3.csv("/data/south_america_summary_dengue_rates.csv", function(data) {
   
   // X axis
   var x = d3.scaleBand()
@@ -73,24 +87,67 @@
       .attr("transform", "translate(-10,0)rotate(-45)")
       .style("text-anchor", "end");
   
-  // Add Y axis
+  // Add Y axis based on selected metric
+  if (metric === "Dengue_Cases") {
   var y = d3.scaleLinear()
+    .domain([0, 9000000]) 
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+  }
+  else if (metric === "Severe_Dengue_Rate"){
+    var y = d3.scaleLinear()
+    .domain([0, 0.5]) 
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+  }
+  else {
+    var y = d3.scaleLinear()
     .domain([0, 0.065]) 
     .range([ height, 0]);
   svg.append("g")
     .call(d3.axisLeft(y));
+  }
   
-  // Bars
-  svg.selectAll("mybar")
-    .data(data)
-    .enter()
-    .append("rect")
-      .attr("x", function(d) { return x(d.Year); })
-      .attr("width", x.bandwidth())
-      .attr("fill", function(d){return colorScale(d.Dengue_Death_Rate) })
-      // no bar at the beginning thus:
-      .attr("height", function(d) { return height - y(0); }) // always equal to 0
-      .attr("y", function(d) { return y(0); });
+  // Bars based on selected metric
+  if (metric === "Dengue_Cases") {
+    svg.selectAll("mybar")
+      .data(data)
+      .enter()
+      .append("rect")
+        .attr("x", function(d) { return x(d.Year); })
+        .attr("width", x.bandwidth())
+        .attr("fill", function(d){return colorScale(d.Dengue_Cases) })
+        // no bar at the beginning thus:
+        .attr("height", function(d) { return height - y(0); }) // always equal to 0
+        .attr("y", function(d) { return y(0); });
+  }
+  else if (metric === "Severe_Dengue_Rate")
+  {
+    svg.selectAll("mybar")
+      .data(data)
+      .enter()
+      .append("rect")
+        .attr("x", function(d) { return x(d.Year); })
+        .attr("width", x.bandwidth())
+        .attr("fill", function(d){return colorScale(d.Severe_Dengue_Rate) })
+        // no bar at the beginning thus:
+        .attr("height", function(d) { return height - y(0); }) // always equal to 0
+        .attr("y", function(d) { return y(0); });
+  }
+  else {
+    svg.selectAll("mybar")
+      .data(data)
+      .enter()
+      .append("rect")
+        .attr("x", function(d) { return x(d.Year); })
+        .attr("width", x.bandwidth())
+        .attr("fill", function(d){return colorScale(d.Dengue_Death_Rate) })
+        // no bar at the beginning thus:
+        .attr("height", function(d) { return height - y(0); }) // always equal to 0
+        .attr("y", function(d) { return y(0); });
+  }
   
   // Add X axis label:
   svg.append("text")
@@ -105,7 +162,7 @@
     .attr("transform", "rotate(-90)")
     .attr("y", -margin.left+20)
     .attr("x", -margin.top-100)
-    .text("Death Rate (%)");
+    .text(metric);
 
   // Title;
   svg.append("text")
@@ -114,69 +171,34 @@
       .attr("text-anchor", "middle")  
       .style("font-size", "20px") 
       .style("text-decoration", "underline")  
-      .text("Dengue Fever Death Rate in South America by Year");
-
-  // Animation
+      .text("Viewer Exploration of Dengue Fever in South America by Country and Metric");
+  
+  // Animation based on selected metric
+  if (metric === "Dengue_Cases") {
   svg.selectAll("rect")
+    .transition()
+    .duration(800)
+    .attr("y", function(d) { return y(d.Dengue_Cases); })
+    .attr("height", function(d) { return height - y(d.Dengue_Cases); })
+    .delay(function(d,i){console.log(i) ; return(i*100)});
+  }
+  else if (metric == "Severe_Dengue_Rate") {
+    svg.selectAll("rect")
+    .transition()
+    .duration(800)
+    .attr("y", function(d) { return y(d.Severe_Dengue_Rate); })
+    .attr("height", function(d) { return height - y(d.Severe_Dengue_Rate); })
+    .delay(function(d,i){console.log(i) ; return(i*100)});
+  }
+  else {
+    svg.selectAll("rect")
     .transition()
     .duration(800)
     .attr("y", function(d) { return y(d.Dengue_Death_Rate); })
     .attr("height", function(d) { return height - y(d.Dengue_Death_Rate); })
     .delay(function(d,i){console.log(i) ; return(i*100)});
-  
-  // Annotation
-  var annotationsScene3 = [
-    {
-      note: {
-        label: "But only 0.047% of cases have resulted in death this year.",
-      },
-      connector: {
-        end: "arrow",        
-        type: "curve",      
-        points: 3,           
-        lineType : "horizontal"
-      },
-      color: ["grey"],
-      x: 600,
-      y: 100,
-      dx: 70,
-      dy: 70,
-    }
-  ];
+  }
 
-  var makeAnnotationsScene3 = d3.annotation()
-    .annotations(annotationsScene3);
-
-  svg.append("g")
-    .call(makeAnnotationsScene3);
-  
-
-  // Annotation
-  var annotationsScene3_p2 = [
-    {
-      note: {
-        label: "Similarly, 0.063% of cases resulted in death in 2014.",
-      },
-      connector: {
-        end: "arrow",        
-        type: "curve",      
-        points: 1,           
-        lineType: "horizontal",
-      },
-      color: ["grey"],
-      x: 55,
-      y: 10,
-      dx: 70,
-      dy: 70,
-    }
-  ];
-
-  var makeAnnotationsScene3_p2 = d3.annotation()
-    .annotations(annotationsScene3_p2);
-
-  svg.append("g")
-    .call(makeAnnotationsScene3_p2);
-  
   });
 
   </script>
