@@ -10,13 +10,14 @@
 <div id="scene3"></div>
 
 <!-- Create previous button -->
-<a href="http://127.0.0.1:5500/scenes/scene3.html"> 
+<a href="http://127.0.0.1:5500/scenes/scene3.html">
   <button>Previous Scene</button>
 </a>
 
 <!-- Create dropdown menus -->
-<label for="countries">Choose a South American country to explore:</label>
-<select name="countries" id="countries">
+<label for="country">Choose a South American country to explore:</label>
+<select id="country" onchange="setCountry()">
+  <option value="">-select country-</option>
   <option value="Argentina">Argentina</option>
   <option value="Bolivia">Bolivia</option>
   <option value="Brazil">Brazil</option>
@@ -31,185 +32,199 @@
   <option value="Venezuela">Venezuela</option>
 </select>
 
-<label for="metrics">Choose a metric to plot:</label>
-<select name="metrics" id="metrics">
+<label for="metric">Choose a metric to plot:</label>
+<select id="metric" onchange="setMetric()">
+  <option value="">-select metric-</option>
   <option value="Dengue_Cases">Total Dengue Cases</option>
   <option value="Severe_Dengue_Rate">Severity Rate</option>
   <option value="Dengue_Death_Rate">Death Rate</option>
 </select>
 
 <script>
-  // for testing only
-  var country = "Argentina";
-  var metric = "Severe_Dengue_Rate";
+  // set country
+  var country;
 
+  function setCountry() {
+    country = document.getElementById('country').value;
+    d3.select("svg").remove();
+    graph.call();
+  }
+
+  // set metric
+  var metric;
+
+  function setMetric() {
+    metric = document.getElementById('metric').value;
+    d3.select("svg").remove();
+    graph.call();
+  }
 
   // set the dimensions and margins of the graph
-  var margin = {top: 70, right: 200, bottom: 70, left: 90},
-      width = 900 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
-  
-  // append the svg object to the body of the page
-  var svg = d3.select("#scene3")
-    .append("svg")
+  var margin = { top: 70, right: 200, bottom: 70, left: 90 },
+    width = 900 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+
+
+  function graph() {
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#scene3")
+      .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-    .append("g")
+      .append("g")
       .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
+        "translate(" + margin.left + "," + margin.top + ")");
 
-  // Parse the Data
-  d3.csv("/data/south_america_by_country_dengue_rates.csv", function(data) {
+    // Parse the Data
+    d3.csv("/data/south_america_by_country_dengue_rates.csv", function (data) {
 
-  var data = data.filter(function(d){ return d.Country_Subregion == country });
-  
-  var max = d3.max(data, function(d) { return d.Dengue_Cases; });
-  var min = d3.min(data, function(d) { return d.Dengue_Cases; });
+      var data = data.filter(function (d) { return d.Country_Subregion == country });
 
-  // Create Color Scale based on selected metric
-  if (metric === "Dengue_Cases") {
-    var max = d3.max(data, function(d) { return d.Dengue_Cases; });
-    var min = d3.min(data, function(d) { return d.Dengue_Cases; });
-    var colorScale = d3.scaleLinear().domain([0,max]) 
-    .range(["gold", "firebrick"]);
-  }
-  else if (metric === "Severe_Dengue_Rate") {
-    var max = d3.max(data, function(d) { return d.Severe_Dengue_Rate; });
-    var min = d3.min(data, function(d) { return d.Severe_Dengue_Rate; });
-    var colorScale = d3.scaleLinear().domain([0,max]) 
-    .range(["gold", "firebrick"]);
-  }
-  else {
-    var max = d3.max(data, function(d) { return d.Dengue_Death_Rate; });
-    var min = d3.min(data, function(d) { return d.Dengue_Death_Rate; });
-    var colorScale = d3.scaleLinear().domain([0,max]) 
-      .range(["gold", "firebrick"]);
-  }
+      // Create Color Scale based on selected metric
+      if (metric === "Dengue_Cases") {
+        var max = d3.max(data, function (d) { return d.Dengue_Cases; });
+        var min = d3.min(data, function (d) { return d.Dengue_Cases; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
+      else if (metric === "Severe_Dengue_Rate") {
+        var max = d3.max(data, function (d) { return d.Severe_Dengue_Rate; });
+        var min = d3.min(data, function (d) { return d.Severe_Dengue_Rate; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
+      else {
+        var max = d3.max(data, function (d) { return d.Dengue_Death_Rate; });
+        var min = d3.min(data, function (d) { return d.Dengue_Death_Rate; });
+        var colorScale = d3.scaleLinear().domain([0, max])
+          .range(["gold", "firebrick"]);
+      }
 
-  // X axis
-  var x = d3.scaleBand()
-    .range([ 0, width ])
-    .domain(data.map(function(d) { return d.Year; }))
-    .padding(0.2);
-  svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x))
-    .selectAll("text")
-      .attr("transform", "translate(-10,0)rotate(-45)")
-      .style("text-anchor", "end");
-  
-  // Add Y axis based on selected metric
-  if (metric === "Dengue_Cases") {
-  var y = d3.scaleLinear()
-    .domain([0, max]) 
-    .range([ height, 0]);
-  svg.append("g")
-    .call(d3.axisLeft(y));
-  }
-  else if (metric === "Severe_Dengue_Rate"){
-    var y = d3.scaleLinear()
-    .domain([0, max]) 
-    .range([ height, 0]);
-  svg.append("g")
-    .call(d3.axisLeft(y));
-  }
-  else {
-    var y = d3.scaleLinear()
-    .domain([0, max]) 
-    .range([ height, 0]);
-  svg.append("g")
-    .call(d3.axisLeft(y));
-  }
-  
-  // Bars based on selected metric
-  if (metric === "Dengue_Cases") {
-    svg.selectAll("mybar")
-      .data(data)
-      .enter()
-      .append("rect")
-        .attr("x", function(d) { return x(d.Year); })
-        .attr("width", x.bandwidth())
-        .attr("fill", function(d){return colorScale(d.Dengue_Cases) })
-        // no bar at the beginning thus:
-        .attr("height", function(d) { return height - y(0); }) // always equal to 0
-        .attr("y", function(d) { return y(0); });
-  }
-  else if (metric === "Severe_Dengue_Rate")
-  {
-    svg.selectAll("mybar")
-      .data(data)
-      .enter()
-      .append("rect")
-        .attr("x", function(d) { return x(d.Year); })
-        .attr("width", x.bandwidth())
-        .attr("fill", function(d){return colorScale(d.Severe_Dengue_Rate) })
-        // no bar at the beginning thus:
-        .attr("height", function(d) { return height - y(0); }) // always equal to 0
-        .attr("y", function(d) { return y(0); });
-  }
-  else {
-    svg.selectAll("mybar")
-      .data(data)
-      .enter()
-      .append("rect")
-        .attr("x", function(d) { return x(d.Year); })
-        .attr("width", x.bandwidth())
-        .attr("fill", function(d){return colorScale(d.Dengue_Death_Rate) })
-        // no bar at the beginning thus:
-        .attr("height", function(d) { return height - y(0); }) // always equal to 0
-        .attr("y", function(d) { return y(0); });
-  }
-  
-  // Add X axis label:
-  svg.append("text")
-    .attr("text-anchor", "middle")
-    .attr("x", width - 350)
-    .attr("y", height + 50)
-    .text("Year");
+      // X axis
+      var x = d3.scaleBand()
+        .range([0, width])
+        .domain(data.map(function (d) { return d.Year; }))
+        .padding(0.2);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
 
-  // Y axis label:
-  svg.append("text")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .attr("y", -margin.left+20)
-    .attr("x", -margin.top-100)
-    .text(metric);
+      // Add Y axis based on selected metric
+      if (metric === "Dengue_Cases") {
+        var y = d3.scaleLinear()
+          .domain([0, max])
+          .range([height, 0]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+      }
+      else if (metric === "Severe_Dengue_Rate") {
+        var y = d3.scaleLinear()
+          .domain([0, max])
+          .range([height, 0]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+      }
+      else {
+        var y = d3.scaleLinear()
+          .domain([0, max])
+          .range([height, 0]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+      }
 
-  // Title;
-  svg.append("text")
-      .attr("x", (width / 2))             
-      .attr("y", 0 - (margin.top / 3))
-      .attr("text-anchor", "middle")  
-      .style("font-size", "20px") 
-      .style("text-decoration", "underline")  
-      .text("Viewer Exploration of Dengue Fever in South America by Country and Metric");
-  
-  // Animation based on selected metric
-  if (metric === "Dengue_Cases") {
-  svg.selectAll("rect")
-    .transition()
-    .duration(800)
-    .attr("y", function(d) { return y(d.Dengue_Cases); })
-    .attr("height", function(d) { return height - y(d.Dengue_Cases); })
-    .delay(function(d,i){console.log(i) ; return(i*100)});
-  }
-  else if (metric == "Severe_Dengue_Rate") {
-    svg.selectAll("rect")
-    .transition()
-    .duration(800)
-    .attr("y", function(d) { return y(d.Severe_Dengue_Rate); })
-    .attr("height", function(d) { return height - y(d.Severe_Dengue_Rate); })
-    .delay(function(d,i){console.log(i) ; return(i*100)});
-  }
-  else {
-    svg.selectAll("rect")
-    .transition()
-    .duration(800)
-    .attr("y", function(d) { return y(d.Dengue_Death_Rate); })
-    .attr("height", function(d) { return height - y(d.Dengue_Death_Rate); })
-    .delay(function(d,i){console.log(i) ; return(i*100)});
-  }
+      // Bars based on selected metric
+      if (metric === "Dengue_Cases") {
+        svg.selectAll("mybar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) { return x(d.Year); })
+          .attr("width", x.bandwidth())
+          .attr("fill", function (d) { return colorScale(d.Dengue_Cases) })
+          // no bar at the beginning thus:
+          .attr("height", function (d) { return height - y(0); }) // always equal to 0
+          .attr("y", function (d) { return y(0); });
+      }
+      else if (metric === "Severe_Dengue_Rate") {
+        svg.selectAll("mybar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) { return x(d.Year); })
+          .attr("width", x.bandwidth())
+          .attr("fill", function (d) { return colorScale(d.Severe_Dengue_Rate) })
+          // no bar at the beginning thus:
+          .attr("height", function (d) { return height - y(0); }) // always equal to 0
+          .attr("y", function (d) { return y(0); });
+      }
+      else {
+        svg.selectAll("mybar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) { return x(d.Year); })
+          .attr("width", x.bandwidth())
+          .attr("fill", function (d) { return colorScale(d.Dengue_Death_Rate) })
+          // no bar at the beginning thus:
+          .attr("height", function (d) { return height - y(0); }) // always equal to 0
+          .attr("y", function (d) { return y(0); });
+      }
 
-  });
+      // Add X axis label:
+      svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("x", width - 350)
+        .attr("y", height + 50)
+        .text("Year");
 
-  </script>
+      // Y axis label:
+      svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -margin.top - 100)
+        .text(metric);
+
+      // Title;
+      svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 3))
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .style("text-decoration", "underline")
+        .text("Viewer Exploration of Dengue Fever in South America by Country and Metric");
+
+      // Animation based on selected metric
+      if (metric === "Dengue_Cases") {
+        svg.selectAll("rect")
+          .transition()
+          .duration(800)
+          .attr("y", function (d) { return y(d.Dengue_Cases); })
+          .attr("height", function (d) { return height - y(d.Dengue_Cases); })
+          .delay(function (d, i) { console.log(i); return (i * 100) });
+      }
+      else if (metric == "Severe_Dengue_Rate") {
+        svg.selectAll("rect")
+          .transition()
+          .duration(800)
+          .attr("y", function (d) { return y(d.Severe_Dengue_Rate); })
+          .attr("height", function (d) { return height - y(d.Severe_Dengue_Rate); })
+          .delay(function (d, i) { console.log(i); return (i * 100) });
+      }
+      else {
+        svg.selectAll("rect")
+          .transition()
+          .duration(800)
+          .attr("y", function (d) { return y(d.Dengue_Death_Rate); })
+          .attr("height", function (d) { return height - y(d.Dengue_Death_Rate); })
+          .delay(function (d, i) { console.log(i); return (i * 100) });
+      }
+
+    });
+  }
+</script>
